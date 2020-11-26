@@ -8,7 +8,6 @@ from keras.layers import Dense, Dropout, Flatten, MaxPooling2D
 from keras.layers.convolutional import Conv2D
 from keras.models import Sequential
 from keras.optimizers import Adam
-from keras.preprocessing.image import ImageDataGenerator
 from keras.utils.np_utils import to_categorical
 from sklearn.model_selection import train_test_split
 
@@ -33,8 +32,8 @@ for x in range(0, noOfClasses):
 images = np.array(images)
 classNo = np.array(classNo)
 
-X_train, X_test, y_train, y_test = train_test_split(images, classNo, test_size=0.2)
-X_train, X_validation, y_train, y_validation = train_test_split(X_train, y_train, test_size=0.2)
+X_train_full, X_test, y_train_full, y_test = train_test_split(images, classNo)
+X_train, X_val, y_train, y_val = train_test_split(X_train_full, y_train_full)
 
 noOfSamples = []
 for x in range(0, noOfClasses):
@@ -50,27 +49,21 @@ def preProcessing(img):
 
 X_train = np.array(list(map(preProcessing, X_train)))
 X_test = np.array(list(map(preProcessing, X_test)))
-X_validation = np.array(list(map(preProcessing, X_validation)))
-# img = X_train[15]
-# img = cv2.resize(img,(150,150))
-# cv2.imshow("",img)
-# cv2.waitKey(0)
+X_val = np.array(list(map(preProcessing, X_val)))
 
+print(X_train.shape)
 X_train = X_train.reshape(X_train.shape[0], X_train.shape[1], X_train.shape[2], 1)
 X_test = X_test.reshape(X_test.shape[0], X_test.shape[1], X_test.shape[2], 1)
-X_validation = X_validation.reshape(X_validation.shape[0], X_validation.shape[1], X_validation.shape[2], 1)
+X_val = X_val.reshape(X_val.shape[0], X_val.shape[1], X_val.shape[2], 1)
 
-dataGen = ImageDataGenerator(width_shift_range=0.1,
-                             height_shift_range=0.1,
-                             zoom_range=0.2,
-                             shear_range=0.1,
-                             rotation_range=10)
-dataGen.fit(X_train)
+print(X_train.shape)
+
 
 y_train = to_categorical(y_train, noOfClasses)
 y_test = to_categorical(y_test, noOfClasses)
-y_validation = to_categorical(y_validation, noOfClasses)
+y_val = to_categorical(y_val, noOfClasses)
 
+print(y_train.shape)
 
 def myModel():
     noOfFilters = 60
@@ -97,15 +90,8 @@ def myModel():
 
 model = myModel()
 print(model.summary())
-batch_size=50
-epochs = 10
-stepsPerEpoch = 131
-history = model.fit_generator(dataGen.flow(X_train, y_train,
-                                           batch_size=batch_size),
-                              steps_per_epoch=stepsPerEpoch,
-                              epochs=2,
-                              validation_data=(X_validation, y_validation),
-                              shuffle=1)
+
+history = model.fit(X_train,y_train,validation_data=(X_val,y_val),epochs=5,steps_per_epoch=1000)
 plt.figure(1)
 plt.plot(history.history['loss'])
 plt.plot(history.history['val_loss'])
@@ -125,7 +111,7 @@ plt.show()
 score = model.evaluate(X_test,y_test,verbose=0)
 print('Test Score=', score[0])
 print('Test Accuracy=', score[1])
-
-pickle_out = open("model_trained.p","wb")
-pickle.dump(model,pickle_out)
-pickle_out.close()
+#
+# pickle_out = open("model_trained.p","wb")
+# pickle.dump(model,pickle_out)
+# pickle_out.close()
