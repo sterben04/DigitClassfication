@@ -4,7 +4,7 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 
-from keras.layers import Dense, Dropout, Flatten, MaxPooling2D
+from keras.layers import Dense, Dropout, Flatten, MaxPooling2D,AveragePooling2D
 from keras.layers.convolutional import Conv2D
 from keras.models import Sequential
 from keras.optimizers import Adam
@@ -73,16 +73,14 @@ def myModel():
     noOfNodes = 500
 
     model = Sequential()
-    model.add((Conv2D(noOfFilters, sizeOfFilter1, input_shape=(32, 32, 1), activation='relu')))
-    model.add((Conv2D(noOfFilters, sizeOfFilter1, activation='relu')))
+    model.add((Conv2D(6, sizeOfFilter1, input_shape=(32, 32, 1), activation='relu')))
     model.add(MaxPooling2D(pool_size=sizeOfPool))
-    model.add((Conv2D(noOfFilters // 2, sizeOfFilter2, activation='relu')))
-    model.add((Conv2D(noOfFilters // 2, sizeOfFilter2, activation='relu')))
+    model.add((Conv2D(16, sizeOfFilter1, activation='relu')))
     model.add(MaxPooling2D(pool_size=sizeOfPool))
-    model.add(Dropout(0.5))
     model.add(Flatten())
-    model.add(Dense(noOfNodes, activation='relu'))
-    model.add(Dropout(0.5))
+    model.add(Dense(120,activation='relu'))
+    model.add(Dense(84, activation='relu'))
+    model.add(Dropout(0.4))
     model.add(Dense(noOfClasses, activation='softmax'))
     model.compile(Adam(learning_rate=0.001), loss='categorical_crossentropy', metrics=['accuracy'])
     return model
@@ -111,7 +109,7 @@ plt.show()
 score = model.evaluate(X_test,y_test,verbose=0)
 print('Test Score=', score[0])
 print('Test Accuracy=', score[1])
-#
-# pickle_out = open("model_trained.p","wb")
+
+# pickle_out = open("model_trained.p", "wb")
 # pickle.dump(model,pickle_out)
 # pickle_out.close()
