@@ -1,9 +1,8 @@
 import os
-import pickle
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-
+import tensorflow as tf
 from keras.layers import Dense, Dropout, Flatten, MaxPooling2D,AveragePooling2D
 from keras.layers.convolutional import Conv2D
 from keras.models import Sequential
@@ -110,6 +109,7 @@ score = model.evaluate(X_test,y_test,verbose=0)
 print('Test Score=', score[0])
 print('Test Accuracy=', score[1])
 
-# pickle_out = open("model_trained.p", "wb")
-# pickle.dump(model,pickle_out)
-# pickle_out.close()
+
+
+export_path = 'model'
+tf.saved_model.save(model, export_path)
